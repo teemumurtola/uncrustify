@@ -235,7 +235,7 @@ typedef struct ASN1_VALUE_st ASN1_VALUE;
 
 #define DECLARE_ASN1_PRINT_FUNCTION_fname(stname, fname) \
 	int fname##_print_ctx(BIO *out, const stname *x, int indent, \
-		const ASN1_PCTX * pctx)
+			const ASN1_PCTX * pctx)
 
 
 /*

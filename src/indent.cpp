@@ -1178,6 +1178,7 @@ void indent_text(void)
             /* Skip any continuation indents */
             idx = frm.pse_tos - 1;
             while ((idx > 0) &&
+                   (frm.pse[idx].type != CT_PP_DEFINE) &&
                    (frm.pse[idx].type != CT_BRACE_OPEN) &&
                    (frm.pse[idx].type != CT_VBRACE_OPEN) &&
                    (frm.pse[idx].type != CT_PAREN_OPEN) &&
