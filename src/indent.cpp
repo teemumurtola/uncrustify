@@ -381,6 +381,10 @@ static int calc_indent_continue(struct parse_frame& frm, int pse_tos)
 {
    int ic = cpd.settings[UO_indent_continue].n;
 
+   if (ic == 0)
+   {
+      ic = cpd.settings[UO_indent_columns].n;
+   }
    if ((ic < 0) && frm.pse[pse_tos].indent_cont)
    {
       return frm.pse[pse_tos].indent;
@@ -1206,7 +1210,8 @@ void indent_text(void)
                {
                   sub = 2;
                }
-               frm.pse[frm.pse_tos].indent = frm.pse[frm.pse_tos - sub].indent + indent_size;
+               frm.pse[frm.pse_tos].indent = calc_indent_continue(frm, frm.pse_tos - sub);
+               frm.pse[frm.pse_tos].indent_cont = true;
                skipped = true;
             }
             else
@@ -1229,7 +1234,8 @@ void indent_text(void)
             frm.pse[frm.pse_tos].indent = frm.pse[frm.pse_tos - 1].indent + indent_size;
             indent_column_set(frm.pse[frm.pse_tos].indent);
          }
-         if ((cpd.settings[UO_indent_continue].n != 0) && (!skipped))
+         if ((cpd.settings[UO_indent_continue].n != 0) && (!skipped) &&
+             !cpd.settings[UO_indent_continue_keep_align].b)
          {
             frm.pse[frm.pse_tos].indent = frm.pse[frm.pse_tos - 1].indent;
             if ((pc->level == pc->brace_level) &&
@@ -1266,7 +1272,8 @@ void indent_text(void)
          if (next != NULL)
          {
             indent_pse_push(frm, pc);
-            if (cpd.settings[UO_indent_continue].n != 0)
+            if (cpd.settings[UO_indent_continue].n != 0 &&
+                !cpd.settings[UO_indent_continue_keep_align].b)
             {
                frm.pse[frm.pse_tos].indent = frm.pse[frm.pse_tos - 1].indent;
                if ((pc->level == pc->brace_level) &&
@@ -1281,7 +1288,9 @@ void indent_text(void)
             }
             else if (chunk_is_newline(next) || !cpd.settings[UO_indent_align_assign].b)
             {
-               frm.pse[frm.pse_tos].indent = frm.pse[frm.pse_tos - 1].indent_tmp + indent_size;
+               frm.pse[frm.pse_tos].indent = frm.pse[frm.pse_tos - 1].indent_tmp;
+               frm.pse[frm.pse_tos].indent = calc_indent_continue(frm, frm.pse_tos);
+               frm.pse[frm.pse_tos].indent_cont = true;
                if (pc->type == CT_ASSIGN)
                {
                   frm.pse[frm.pse_tos].type = CT_ASSIGN_NL;
@@ -1315,17 +1324,8 @@ void indent_text(void)
       else if ((pc->type == CT_OC_SCOPE) || (pc->type == CT_TYPEDEF))
       {
          indent_pse_push(frm, pc);
-         if (cpd.settings[UO_indent_continue].n != 0)
-         {
-            //frm.pse[frm.pse_tos].indent = frm.pse[frm.pse_tos - 1].indent +
-            //                              abs(cpd.settings[UO_indent_continue].n);
-            frm.pse[frm.pse_tos].indent = calc_indent_continue(frm, frm.pse_tos - 1);
-            frm.pse[frm.pse_tos].indent_cont = true;
-         }
-         else
-         {
-            frm.pse[frm.pse_tos].indent = frm.pse[frm.pse_tos - 1].indent + indent_size;
-         }
+         frm.pse[frm.pse_tos].indent = calc_indent_continue(frm, frm.pse_tos - 1);
+         frm.pse[frm.pse_tos].indent_cont = true;
       }
       else
       {
@@ -1340,17 +1340,15 @@ void indent_text(void)
           ((pc->flags & PCF_IN_FCN_DEF) == 0) &&
           ((pc->flags & PCF_VAR_1ST_DEF) == PCF_VAR_1ST_DEF))
       {
-         if (cpd.settings[UO_indent_continue].n != 0)
+         if ((cpd.settings[UO_indent_continue].n != 0 &&
+              !cpd.settings[UO_indent_continue_keep_align].b) ||
+             cpd.settings[UO_indent_var_def_cont].b ||
+             chunk_is_newline(chunk_get_prev(pc)))
          {
             //vardefcol = frm.pse[frm.pse_tos].indent +
             //            abs(cpd.settings[UO_indent_continue].n);
             vardefcol = calc_indent_continue(frm, frm.pse_tos);
             frm.pse[frm.pse_tos].indent_cont = true;
-         }
-         else if (cpd.settings[UO_indent_var_def_cont].b ||
-                  chunk_is_newline(chunk_get_prev(pc)))
-         {
-            vardefcol = frm.pse[frm.pse_tos].indent + indent_size;
          }
          else
          {

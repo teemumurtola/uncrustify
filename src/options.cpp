@@ -523,6 +523,8 @@ void register_options(void)
    unc_add_option("indent_continue", UO_indent_continue, AT_NUM,
                   "The continuation indent. If non-zero, this overrides the indent of '(' and '=' continuation indents.\n"
                   "For FreeBSD, this is set to 4. Negative value is absolute and not increased for each ( level");
+   unc_add_option("indent_continue_keep_align", UO_indent_continue_keep_align, AT_BOOL,
+                  "Whether indent_continue affects all continuation lines (false) or only those that cannot be aligned (true).");
    unc_add_option("indent_with_tabs", UO_indent_with_tabs, AT_NUM,
                   "How to use tabs when indenting code\n"
                   "0=spaces only\n"
