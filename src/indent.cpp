@@ -1211,7 +1211,7 @@ void indent_text(void)
                   sub = 2;
                }
                frm.pse[frm.pse_tos].indent = calc_indent_continue(frm, frm.pse_tos - sub);
-               frm.pse[frm.pse_tos].indent_cont = true;
+               frm.pse[frm.pse_tos].indent_cont = false;
                skipped = true;
             }
             else
@@ -1290,7 +1290,7 @@ void indent_text(void)
             {
                frm.pse[frm.pse_tos].indent = frm.pse[frm.pse_tos - 1].indent_tmp;
                frm.pse[frm.pse_tos].indent = calc_indent_continue(frm, frm.pse_tos);
-               frm.pse[frm.pse_tos].indent_cont = true;
+               frm.pse[frm.pse_tos].indent_cont = !chunk_is_newline(next);
                if (pc->type == CT_ASSIGN)
                {
                   frm.pse[frm.pse_tos].type = CT_ASSIGN_NL;
@@ -1348,7 +1348,6 @@ void indent_text(void)
             //vardefcol = frm.pse[frm.pse_tos].indent +
             //            abs(cpd.settings[UO_indent_continue].n);
             vardefcol = calc_indent_continue(frm, frm.pse_tos);
-            frm.pse[frm.pse_tos].indent_cont = true;
          }
          else
          {
