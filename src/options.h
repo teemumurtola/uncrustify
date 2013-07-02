@@ -105,7 +105,6 @@ enum uncrustify_options
 
    UO_indent_columns,           // ie 3 or 8
    UO_indent_continue,
-   UO_indent_continue_keep_align,
    UO_indent_with_tabs,         // 1=only to the 'level' indent, 2=use tabs for indenting
    UO_indent_cmt_with_tabs,
    //UO_indent_brace_struct,      //TODO: spaces to indent brace after struct/enum/union def
@@ -174,6 +173,7 @@ enum uncrustify_options
    UO_indent_relative_single_line_comments, // indent single line ('//') comments after code
    UO_indent_preserve_sql,                  // preserve indent of EXEC SQL statement body
    UO_indent_align_assign,
+   UO_indent_align_paren,
    UO_indent_oc_block,
    UO_indent_oc_block_msg,
    UO_indent_oc_msg_colon,

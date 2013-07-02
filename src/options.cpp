@@ -521,10 +521,8 @@ void register_options(void)
                   "The number of columns to indent per level.\n"
                   "Usually 2, 3, 4, or 8.");
    unc_add_option("indent_continue", UO_indent_continue, AT_NUM,
-                  "The continuation indent. If non-zero, this overrides the indent of '(' and '=' continuation indents.\n"
+                  "The continuation indent for '(', '=' and variable declarations. If zero, indent_columns is used.\n"
                   "For FreeBSD, this is set to 4. Negative value is absolute and not increased for each ( level");
-   unc_add_option("indent_continue_keep_align", UO_indent_continue_keep_align, AT_BOOL,
-                  "Whether indent_continue affects all continuation lines (false) or only those that cannot be aligned (true).");
    unc_add_option("indent_with_tabs", UO_indent_with_tabs, AT_NUM,
                   "How to use tabs when indenting code\n"
                   "0=spaces only\n"
@@ -651,6 +649,9 @@ void register_options(void)
    unc_add_option("indent_align_assign", UO_indent_align_assign, AT_BOOL,
                   "Align continued statements at the '='. Default=True\n"
                   "If FALSE or the '=' is followed by a newline, the next line is indent one tab.");
+   unc_add_option("indent_align_paren", UO_indent_align_paren, AT_BOOL,
+                  "Align continued statements at the '('. Default=True\n"
+                  "If FALSE or the '(' is followed by a newline, the next line is indent one tab.");
    unc_add_option("indent_oc_block", UO_indent_oc_block, AT_BOOL,
                   "Indent OC blocks at brace level instead of usual rules.");
    unc_add_option("indent_oc_block_msg", UO_indent_oc_block_msg, AT_NUM,
@@ -1867,6 +1868,7 @@ void set_option_defaults(void)
    cpd.settings[UO_pp_indent_count].n      = 1;
    cpd.settings[UO_align_left_shift].b     = true;
    cpd.settings[UO_indent_align_assign].b  = true;
+   cpd.settings[UO_indent_align_paren].b   = true;
    cpd.settings[UO_sp_pp_concat].a         = AV_ADD;
    cpd.settings[UO_sp_angle_shift].a       = AV_ADD;
 }

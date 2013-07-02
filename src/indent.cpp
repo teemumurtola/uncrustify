@@ -1147,8 +1147,6 @@ void indent_text(void)
          /* Open parens and squares - never update indent_column, unless right
           * after a newline.
           */
-         bool skipped = false;
-
          indent_pse_push(frm, pc);
          frm.pse[frm.pse_tos].indent = pc->column + pc->len();
 
@@ -1187,7 +1185,6 @@ void indent_text(void)
                    (frm.pse[idx].type != CT_ASSIGN_NL))
             {
                idx--;
-               skipped = true;
             }
             frm.pse[frm.pse_tos].indent = frm.pse[idx].indent + indent_size;
             if (cpd.settings[UO_indent_func_param_double].b)
@@ -1202,7 +1199,7 @@ void indent_text(void)
                   (chunk_is_str(pc, "[", 1) && !cpd.settings[UO_indent_square_nl].b))
          {
             next = chunk_get_next_nc(pc);
-            if (chunk_is_newline(next))
+            if (chunk_is_newline(next) || !cpd.settings[UO_indent_align_paren].b)
             {
                int sub = 1;
                if (frm.pse[frm.pse_tos - 1].type == CT_ASSIGN ||
@@ -1211,8 +1208,7 @@ void indent_text(void)
                   sub = 2;
                }
                frm.pse[frm.pse_tos].indent = calc_indent_continue(frm, frm.pse_tos - sub);
-               frm.pse[frm.pse_tos].indent_cont = false;
-               skipped = true;
+               frm.pse[frm.pse_tos].indent_cont = !chunk_is_newline(next);
             }
             else
             {
@@ -1234,19 +1230,7 @@ void indent_text(void)
             frm.pse[frm.pse_tos].indent = frm.pse[frm.pse_tos - 1].indent + indent_size;
             indent_column_set(frm.pse[frm.pse_tos].indent);
          }
-         if ((cpd.settings[UO_indent_continue].n != 0) && (!skipped) &&
-             !cpd.settings[UO_indent_continue_keep_align].b)
-         {
-            frm.pse[frm.pse_tos].indent = frm.pse[frm.pse_tos - 1].indent;
-            if ((pc->level == pc->brace_level) &&
-                (((pc->type == CT_FPAREN_OPEN) && (pc->parent_type != CT_FUNC_CTOR_VAR)) ||
-                 (pc->type == CT_SPAREN_OPEN)))
-            {
-               //frm.pse[frm.pse_tos].indent += abs(cpd.settings[UO_indent_continue].n);
-               frm.pse[frm.pse_tos].indent = calc_indent_continue(frm, frm.pse_tos);
-               frm.pse[frm.pse_tos].indent_cont = true;
-            }
-         }
+
          frm.pse[frm.pse_tos].indent_tmp = frm.pse[frm.pse_tos].indent;
          frm.paren_count++;
       }
@@ -1272,26 +1256,13 @@ void indent_text(void)
          if (next != NULL)
          {
             indent_pse_push(frm, pc);
-            if (cpd.settings[UO_indent_continue].n != 0 &&
-                !cpd.settings[UO_indent_continue_keep_align].b)
-            {
-               frm.pse[frm.pse_tos].indent = frm.pse[frm.pse_tos - 1].indent;
-               if ((pc->level == pc->brace_level) &&
-                   ((pc->type != CT_ASSIGN) ||
-                    ((pc->parent_type != CT_FUNC_PROTO) && (pc->parent_type != CT_FUNC_DEF))))
-               {
-                  //frm.pse[frm.pse_tos].indent += abs(cpd.settings[UO_indent_continue].n);
-                  frm.pse[frm.pse_tos].indent = calc_indent_continue(frm, frm.pse_tos);
-                  frm.pse[frm.pse_tos].indent_cont = true;
 
-               }
-            }
-            else if (chunk_is_newline(next) || !cpd.settings[UO_indent_align_assign].b)
+            if (chunk_is_newline(next) || !cpd.settings[UO_indent_align_assign].b)
             {
                frm.pse[frm.pse_tos].indent = frm.pse[frm.pse_tos - 1].indent_tmp;
                frm.pse[frm.pse_tos].indent = calc_indent_continue(frm, frm.pse_tos);
                frm.pse[frm.pse_tos].indent_cont = !chunk_is_newline(next);
-               if (pc->type == CT_ASSIGN)
+               if (pc->type == CT_ASSIGN && chunk_is_newline(next))
                {
                   frm.pse[frm.pse_tos].type = CT_ASSIGN_NL;
                }
@@ -1340,13 +1311,9 @@ void indent_text(void)
           ((pc->flags & PCF_IN_FCN_DEF) == 0) &&
           ((pc->flags & PCF_VAR_1ST_DEF) == PCF_VAR_1ST_DEF))
       {
-         if ((cpd.settings[UO_indent_continue].n != 0 &&
-              !cpd.settings[UO_indent_continue_keep_align].b) ||
-             cpd.settings[UO_indent_var_def_cont].b ||
+         if (cpd.settings[UO_indent_var_def_cont].b ||
              chunk_is_newline(chunk_get_prev(pc)))
          {
-            //vardefcol = frm.pse[frm.pse_tos].indent +
-            //            abs(cpd.settings[UO_indent_continue].n);
             vardefcol = calc_indent_continue(frm, frm.pse_tos);
          }
          else
